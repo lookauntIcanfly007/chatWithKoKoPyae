@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .kokoPyae {
+        margin-top: 30px;
+        text-align: center;
+      }
+      .app {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .chatWindow {
+        width: 400px;
+        margin-top: 30px;
+        border: 3px solid lightgray;
+        padding: 10px;
+      }
+      .button {
+        margin-top: 15px;
+      }
+      .output {
+        height: 200px;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <h2 class="kokoPyae">Chat with Ko Ko Pyae</h2>
+    <div class="app">
+      <div class="chatWindow">
+        <div class="output"></div>
+        <div class="feedback"></div>
+        <input type="text" class="form-control nameInput" placeholder="Name" />
+        <input
+          type="text"
+          class="form-control messageInput"
+          placeholder="Message"
+        />
+        <button type="button" class="btn btn-success button">Send</button>
+      </div>
+    </div>
+    <script>
+      const socket = io("http://localhost:4000");
+      const nameInput = document.querySelector(".nameInput");
+      const messageInput = document.querySelector(".messageInput");
+      const button = document.querySelector(".button");
+      const output = document.querySelector(".output");
+      const feedback = document.querySelector(".feedback");
+
+      messageInput.addEventListener("keypress", () => {
+        socket.emit("typing", nameInput.value);
+      });
+
+      button.addEventListener("click", () => {
+        let data = {
+          name: nameInput.value,
+          message: messageInput.value,
+        };
+        socket.emit("chat", data);
+      });
+      socket.on("chat", (data) => {
+        output.innerHTML += `<p><strong>${data.name}</strong>: ${data.message}</p>`;
+        messageInput.value = "";
+        feedback.innerHTML = "";
+      });
+      socket.on("typing", (name) => {
+        feedback.innerHTML = `<p><em>${name}</em> is typing...</p>`;
+        setTimeout(() => {
+          feedback.innerHTML = "";
+        }, 3000);
+      });
+    </script>
+  </body>
+</html>
